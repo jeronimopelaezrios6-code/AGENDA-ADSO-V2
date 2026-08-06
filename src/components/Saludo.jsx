@@ -6,7 +6,7 @@ function Saludo({ nombre = "Aprendiz", curso = "React" }) {
         </div>
     );
 
-    console.log("Saludo")
+    console.log("Saludos")
 }
 
 export default Saludo;

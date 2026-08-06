@@ -46,5 +46,5 @@ export default function FormularioContacto({ form, onChange, onSubmit, totalCont
             </form>
         </section>
     );
-    console.log("formularioContacto")
+    console.log("formularioContactos")
 }
