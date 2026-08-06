@@ -1,164 +1,307 @@
-:root {
-  --azul: #2563eb;
-  --azul-oscuro: #1e3a8a;
-  --azul-suave: #7ab8ff;
-  --naranja: #f59e0b;
-  --crema: #fff7ed;
-  --texto: #334155;
-  --borde: #dbeafe;
-  --blanco: #ffffff;
+/*=========================
+  FUENTE Y RESET
+=========================*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Inter",sans-serif;
 }
 
-body {
-  margin: 0;
-  font-family: 'Times New Roman', Times, serif;
-  background: linear-gradient(135deg, #e0fffa 0%, #eff6ff 100%);
-  color: #5b8ef7;
+body{
+    background:#0f172a;
+    color:#f8fafc;
 }
 
-#root {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 24px;
-  box-sizing: border-box;
+/*=========================
+  CONTENEDOR
+=========================*/
+
+.app-container{
+    width:92%;
+    max-width:1450px;
+    margin:auto;
+    padding:45px 0;
 }
 
-.app-container {
-  width: 100%;
-  max-width: 1100px;
-  background: var(--blanco);
-  border-radius: 20px;
-  padding: 28px;
-  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.15);
-  border: 1px solid var(--borde);
+/*=========================
+  SALUDO
+=========================*/
+
+.saludo-texto{
+    text-align:center;
+    font-size:2.3rem;
+    font-weight:700;
+    color:#ffffff;
 }
 
-.panel-layout {
-  display: grid;
-  grid-template-columns: minmax(300px, 420px) minmax(0, 1fr);
-  gap: 24px;
-  align-items: start;
+.saludo-texto:last-child{
+    color:#38bdf8;
+    margin-bottom:40px;
 }
 
-.form-panel,
-.lista-panel {
-  background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
-  border: 1px solid #c7d2fe;
-  border-radius: 18px;
-  padding: 20px;
+/*=========================
+  LAYOUT
+=========================*/
+
+.panel-layout{
+    display:grid;
+    grid-template-columns:380px 1fr;
+    gap:35px;
 }
 
-.app-title {
-  margin: 0 0 10px;
-  color: var(--azul-oscuro);
-  font-size: 2rem;
+/*=========================
+  FORMULARIO
+=========================*/
+
+.form-panel{
+
+    background:#1e293b;
+    border:1px solid #334155;
+    border-radius:20px;
+    padding:30px;
+    position:sticky;
+    top:20px;
 }
 
-.saludo-texto {
-  color: var(--azul-suave);
+.app-title{
+    text-align:center;
+    font-size:2rem;
+    margin-bottom:8px;
 }
 
-.contador {
-  font-size: 1.1rem;
-  color: var(--azul-oscuro);
-  margin-bottom: 20px;
+.contador{
+    text-align:center;
+    color:#94a3b8;
+    margin-bottom:30px;
 }
 
-.form-contacto {
-  display: grid;
-  gap: 12px;
-  margin-bottom: 0;
-  padding: 18px;
-  background: var(--crema);
-  border-radius: 14px;
-  border: 1px solid #a1ffeb;
+.form-contacto{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
 }
 
-.form-contacto input {
-  padding: 10px 12px;
-  border: 1px solid var(--borde);
-  border-radius: 10px;
-  font-size: 0.95rem;
-  outline: none;
+.form-contacto input{
+
+    background:#0f172a;
+    border:1px solid #334155;
+    color:white;
+    padding:15px;
+    border-radius:12px;
+    font-size:15px;
+    transition:.3s;
+
 }
 
-.form-contacto input:focus {
-  border-color: var(--azul);
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+.form-contacto input::placeholder{
+    color:#64748b;
 }
 
-.form-contacto button {
-  padding: 10px 14px;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--azul) 0%, #3b82f6 100%);
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
+.form-contacto input:focus{
+
+    outline:none;
+    border-color:#38bdf8;
+    box-shadow:0 0 0 3px rgba(56,189,248,.15);
+
 }
 
-.form-contacto button:disabled {
-  background: #cbd5e1;
-  cursor: not-allowed;
+.form-contacto button{
+
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    background:#0ea5e9;
+    color:white;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+
 }
 
-.lista-titulo {
-  margin: 0 0 16px;
-  color: var(--azul-oscuro);
-  font-size: 1.5rem;
+.form-contacto button:hover{
+
+    background:#0284c7;
+
 }
 
-.lista-contactos {
-  display: grid;
-  gap: 12px;
+.form-contacto button:disabled{
+
+    background:#334155;
+    cursor:not-allowed;
+
 }
 
-.tarjeta-contacto {
-  padding: 16px;
-  border-radius: 14px;
-  background: var(--blanco);
-  border: 1px solid #c7d2fe;
+/*=========================
+  PANEL LISTA
+=========================*/
+
+.lista-panel{
+
+    background:#1e293b;
+    border:1px solid #334155;
+    border-radius:20px;
+    padding:30px;
+
 }
 
-@media (max-width: 820px) {
-  .panel-layout {
-    grid-template-columns: 1fr;
-  }
+.lista-titulo{
+
+    font-size:2rem;
+    margin-bottom:25px;
+
 }
 
-.tarjeta-contacto h3 {
-  margin: 0 0 8px;
-  color: var(--azul-oscuro);
+.lista-contactos{
+
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+    gap:22px;
+
 }
 
-.tarjeta-contacto p {
-  margin: 4px 0;
+/*=========================
+  TARJETA
+=========================*/
+
+.tarjeta-contacto{
+
+    background:#111827;
+    border:1px solid #334155;
+    border-radius:18px;
+    padding:22px;
+    transition:.3s;
+
 }
 
-.badge {
-  display: inline-block;
-  background: var(--borde);
-  color: var(--azul-oscuro);
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  margin-top: 6px;
+.tarjeta-contacto:hover{
+
+    transform:translateY(-5px);
+    border-color:#38bdf8;
+    box-shadow:0 12px 25px rgba(0,0,0,.35);
+
 }
 
-.btn-eliminar {
-  display: block;
-  margin-top: 10px;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 8px;
-  background: #ef4444;
-  color: white;
-  cursor: pointer;
-  font-weight: bold;
+.tarjeta-contacto h3{
+
+    color:#ffffff;
+    margin-bottom:15px;
+    font-size:1.3rem;
+
 }
 
-.btn-eliminar:hover {
-  background: #dc2626;
+.tarjeta-contacto p{
+
+    color:#cbd5e1;
+    margin:10px 0;
+    line-height:1.5;
+
+}
+
+/*=========================
+  ETIQUETA
+=========================*/
+
+.badge{
+
+    display:inline-block;
+    margin-top:15px;
+    padding:7px 15px;
+    border-radius:30px;
+    background:#1d4ed8;
+    color:white;
+    font-size:13px;
+    font-weight:600;
+
+}
+
+/*=========================
+  BOTÓN ELIMINAR
+=========================*/
+
+.btn-eliminar{
+
+    width:100%;
+    margin-top:22px;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:#dc2626;
+    color:white;
+    cursor:pointer;
+    transition:.3s;
+
+}
+
+.btn-eliminar:hover{
+
+    background:#b91c1c;
+
+}
+
+/*=========================
+  SCROLL
+=========================*/
+
+::-webkit-scrollbar{
+    width:10px;
+}
+
+::-webkit-scrollbar-track{
+    background:#111827;
+}
+
+::-webkit-scrollbar-thumb{
+    background:#334155;
+    border-radius:20px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+    background:#38bdf8;
+}
+
+/*=========================
+  RESPONSIVE
+=========================*/
+
+@media(max-width:950px){
+
+.panel-layout{
+
+    grid-template-columns:1fr;
+
+}
+
+.form-panel{
+
+    position:static;
+
+}
+
+}
+
+@media(max-width:600px){
+
+.lista-contactos{
+
+    grid-template-columns:1fr;
+
+}
+
+.saludo-texto{
+
+    font-size:1.7rem;
+
+}
+
+.app-container{
+
+    width:95%;
+
+}
+
 }

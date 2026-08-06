@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import ContactoCard from "./components/ContactoCard";
 import FormularioContacto from "./components/FormularioContacto";
@@ -15,7 +15,9 @@ const contactosIniciales = [
 ];
 
 export default function App() {
-  const [contactos, setContactos] = useState(contactosIniciales);
+  const [contactos, setContactos] = useState(() => {
+    return JSON.parse(localStorage.getItem("contactos") || "null") || contactosIniciales;
+  });
   const [form, setForm] = useState({
     nombre: "",
     correo: "",
@@ -23,39 +25,40 @@ export default function App() {
     etiqueta: "",
   });
 
-  const agregarContacto = (nuevo) => {
-    setContactos((prev) => [...prev, { id: Date.now(), ...nuevo }]);
-  };
+  useEffect(() => {
+    localStorage.setItem("contactos", JSON.stringify(contactos));
+  }, [contactos]);
 
-  const eliminarContacto = (id) => {
-    setContactos((prev) => prev.filter((c) => c.id !== id));
-  };
+  function guardarContacto(nuevo) {
+    setContactos([...contactos, { id: Date.now(), ...nuevo }]);
+  }
 
-  const onChange = (e) => {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
-  };
+  function borrarContacto(id) {
+    setContactos(contactos.filter((c) => c.id !== id));
+  }
 
-  const onSubmit = (e) => {
-    e.preventDefault();
-    agregarContacto(form);
+  function cambiarTexto(evento) {
+    const { name, value } = evento.target;
+    setForm({ ...form, [name]: value });
+  }
+
+  function enviarFormulario(evento) {
+    evento.preventDefault();
+    guardarContacto(form);
     setForm({ nombre: "", correo: "", telefono: "", etiqueta: "" });
-  };
+  }
 
   return (
     <main className="app-container">
-      <Saludo nombre="Cristian Román" curso="React" />
+      <Saludo nombre="Jeronimo" curso="React" />
 
       <div className="panel-layout">
-        <section className="form-panel">
-          <h1 className="app-title">Formulario</h1>
-
-          <p className="contador">
-            Tienes <strong>{contactos.length}</strong> {contactos.length === 1 ? "contacto guardado" : "contactos guardados"}
-          </p>
-
-          <FormularioContacto form={form} onChange={onChange} onSubmit={onSubmit} />
-        </section>
+        <FormularioContacto
+          form={form}
+          onChange={cambiarTexto}
+          onSubmit={enviarFormulario}
+          totalContactos={contactos.length}
+        />
 
         <section className="lista-panel">
           <h2 className="lista-titulo">Registros</h2>
@@ -72,7 +75,7 @@ export default function App() {
                   telefono={c.telefono}
                   correo={c.correo}
                   etiqueta={c.etiqueta}
-                  onDelete={eliminarContacto}
+                  onDelete={borrarContacto}
                 />
               ))
             )}
