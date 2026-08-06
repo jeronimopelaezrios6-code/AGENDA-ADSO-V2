@@ -5,6 +5,8 @@ function Saludo({ nombre = "Aprendiz", curso = "React" }) {
             <h2 className="saludo-texto">Bienvenido al curso de {curso}</h2>
         </div>
     );
+
+    console.log("Saludo")
 }
 
 export default Saludo;

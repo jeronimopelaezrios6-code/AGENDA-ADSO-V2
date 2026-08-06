@@ -12,4 +12,5 @@ export default function ContactoCard({ id, nombre, telefono, correo, etiqueta, o
             </button>
         </article>
     );
+    console.log("ContactoCard")
 }

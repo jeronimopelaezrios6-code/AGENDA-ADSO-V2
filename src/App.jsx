@@ -7,9 +7,9 @@ import Saludo from "./components/Saludo";
 const contactosIniciales = [
   {
     id: 1,
-    nombre: "Cristian Román",
+    nombre: "Jeronimo pelaez rio",
     telefono: "300 123 4567",
-    correo: "cristian@sena.edu.co",
+    correo: "jeronimoPR@sena.edu.co",
     etiqueta: "Aprendiz",
   },
 ];
