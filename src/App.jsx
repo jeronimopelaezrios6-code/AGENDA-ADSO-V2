@@ -2,21 +2,16 @@ import { useEffect, useState } from "react";
 import ContactoCard from "./components/ContactoCard";
 import FormularioContacto from "./components/FormularioContacto";
 import Saludo from "./components/Saludo";
-
-const contactosIniciales = [
-  {
-    id: 1,
-    nombre: "Jeronimo Pelaez Rios",
-    telefono: "300 123 4567",
-    correo: "jeronimoPR@sena.edu.co",
-    etiqueta: "Aprendiz",
-  },
-];
+import {
+  listarContactos,
+  crearContacto,
+  eliminarContactoPorId,
+} from "./Api.js";
 
 export default function App() {
-  const [contactos, setContactos] = useState(() => {
-    return JSON.parse(localStorage.getItem("contactos") || "null") || contactosIniciales;
-  });
+  const [contactos, setContactos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
 
   const [form, setForm] = useState({
     nombre: "",
@@ -25,26 +20,58 @@ export default function App() {
     etiqueta: "",
   });
 
+  // GET - cargar contactos desde JSON Server
   useEffect(() => {
-    localStorage.setItem("contactos", JSON.stringify(contactos));
-  }, [contactos]);
+    async function cargarContactos() {
+      try {
+        const data = await listarContactos();
+        setContactos(data);
+      } catch (e) {
+        setError("No se pudo cargar la lista de contactos");
+      } finally {
+        setCargando(false);
+      }
+    }
 
-  function guardarContacto(nuevo) {
-    setContactos([...contactos, { id: Date.now(), ...nuevo }]);
+    cargarContactos();
+  }, []);
+
+  // POST - agregar contacto
+  async function guardarContacto(nuevo) {
+    try {
+      const creado = await crearContacto(nuevo);
+
+      setContactos((prev) => [...prev, creado]);
+    } catch (e) {
+      setError("No se pudo agregar el contacto");
+    }
   }
 
-  function borrarContacto(id) {
-    setContactos(contactos.filter((c) => c.id !== id));
+  // DELETE - eliminar contacto
+  async function borrarContacto(id) {
+    try {
+      await eliminarContactoPorId(id);
+
+      setContactos((prev) => prev.filter((c) => c.id !== id));
+    } catch (e) {
+      setError("No se pudo eliminar el contacto");
+    }
   }
 
   function cambiarTexto(e) {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+
+    setForm({
+      ...form,
+      [name]: value,
+    });
   }
 
   function enviarFormulario(e) {
     e.preventDefault();
+
     guardarContacto(form);
+
     setForm({
       nombre: "",
       correo: "",
@@ -75,9 +102,21 @@ export default function App() {
               Registros
             </h2>
 
+            {cargando && (
+              <p className="text-slate-400 mb-4">
+                Cargando contactos...
+              </p>
+            )}
+
+            {error && (
+              <p className="text-red-400 mb-4">
+                {error}
+              </p>
+            )}
+
             <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
 
-              {contactos.length === 0 ? (
+              {!cargando && contactos.length === 0 ? (
                 <p className="text-slate-400">
                   No hay contactos en la agenda.
                 </p>

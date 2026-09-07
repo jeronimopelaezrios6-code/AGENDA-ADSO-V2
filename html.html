@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clase 7 – API REST + JSON Server | Agenda ADSO v5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0F172A;
+    --surface:   #1E293B;
+    --surface2:  #263349;
+    --border:    #334155;
+    --text:      #F1F5F9;
+    --muted:     #94A3B8;
+    --dim:       #64748B;
+
+    --cyan:      #06B6D4;
+    --cyan-dim:  #164E63;
+    --cyan-soft: #0E7490;
+
+    --green:     #22C55E;
+    --green-dim: #14532D;
+
+    --red:       #EF4444;
+    --red-dim:   #7F1D1D;
+
+    --amber:     #F59E0B;
+    --amber-dim: #78350F;
+
+    --violet:    #8B5CF6;
+    --violet-dim:#3B0764;
+    --violet-soft:#5B21B6;
+
+    --radius:    10px;
+    --mono:      'JetBrains Mono', monospace;
+    --sans:      'Inter', system-ui, sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* ── PROGRESS BAR ──────────────────────────────── */
+  #progress-wrap {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--border);
+    z-index: 100;
+  }
+  #progress-bar {
+    height: 100%;
+    background: var(--cyan);
+    transition: width .4s ease;
+    width: 11.11%;
+  }
+
+  /* ── HEADER BAR ────────────────────────────────── */
+  #topbar {
+    position: fixed;
+    top: 3px; left: 0; right: 0;
+    height: 44px;
+    background: rgba(15,23,42,.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    z-index: 99;
+  }
+  #topbar-left { display: flex; align-items: center; gap: 10px; }
+  .live-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 0 0 rgba(34,197,94,.6);
+    animation: ping-dot 2s ease-out infinite;
+  }
+  @keyframes ping-dot {
+    0%   { box-shadow: 0 0 0 0 rgba(34,197,94,.6); }
+    70%  { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+    100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+  }
+  .topbar-url {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .02em;
+  }
+  #slide-counter {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--dim);
+  }
+
+  /* ── MAIN DECK ─────────────────────────────────── */
+  #deck {
+    width: 100%;
+    max-width: 820px;
+    padding: 4.5rem 1.5rem 2rem;
+    flex: 1;
+  }
+
+  .slide { display: none; animation: fadeIn .25s ease; }
+  .slide.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ── TYPOGRAPHY ────────────────────────────────── */
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  h1 { font-size: clamp(26px,4vw,42px); font-weight: 600; line-height: 1.15; }
+  h2 { font-size: clamp(20px,3vw,28px); font-weight: 600; line-height: 1.2; }
+  h3 { font-size: 16px; font-weight: 500; }
+
+  /* ── CARDS ─────────────────────────────────────── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+  }
+  .card-accent { border-left: 3px solid var(--cyan); }
+  .card-green  { border-left: 3px solid var(--green); }
+  .card-violet { border-left: 3px solid var(--violet); }
+  .card-red    { border-left: 3px solid var(--red); }
+
+  /* ── GRID ──────────────────────────────────────── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 560px) { .grid2,.grid3 { grid-template-columns: 1fr; } }
+
+  /* ── HTTP VERB BADGES ──────────────────────────── */
+  .verb {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .06em;
+    padding: 3px 10px;
+    border-radius: 6px;
+  }
+  .v-get  { background: var(--green-dim);  color: var(--green);  }
+  .v-post { background: var(--cyan-dim);   color: var(--cyan);   }
+  .v-del  { background: var(--red-dim);    color: var(--red);    }
+  .v-patch{ background: var(--amber-dim);  color: var(--amber);  }
+  .v-200  { background: var(--surface2);   color: var(--muted);  border: 1px solid var(--border); }
+
+  /* ── FLOATING VERB PILLS (hero) ────────────────── */
+  .hero-wrap {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0C1A35 0%, #0F172A 60%, #0D1F2E 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 3rem 2.5rem;
+    min-height: 260px;
+    margin-bottom: 16px;
+  }
+  .fv {
+    position: absolute;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 4px 11px;
+    opacity: .6;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  @keyframes fl1 { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-14px) rotate(2deg)} }
+  @keyframes fl2 { 0%,100%{transform:translateY(0) rotate(1deg)}  50%{transform:translateY(-9px) rotate(-2deg)} }
+  @keyframes fl3 { 0%,100%{transform:translateY(0)}               50%{transform:translateY(-17px)} }
+  .a1{animation:fl1 4s ease-in-out infinite}
+  .a2{animation:fl2 5.2s ease-in-out infinite .5s}
+  .a3{animation:fl3 3.8s ease-in-out infinite 1s}
+  .a4{animation:fl1 5.8s ease-in-out infinite 1.5s}
+  .a5{animation:fl2 4.5s ease-in-out infinite .8s}
+  .a6{animation:fl3 6s ease-in-out infinite .3s}
+  .hero-content { position: relative; z-index: 1; }
+
+  /* ── CODE BLOCKS ───────────────────────────────── */
+  .code-wrap {
+    background: #070E1C;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.9;
+    overflow-x: auto;
+    tab-size: 2;
+  }
+  .kw  { color: #7DD3FC; }  /* keywords */
+  .fn  { color: #A5F3FC; }  /* functions */
+  .st  { color: #86EFAC; }  /* strings */
+  .cm  { color: #475569; font-style: italic; }  /* comments */
+  .er  { color: #FCA5A5; }  /* errors */
+  .num { color: #FDE68A; }  /* numbers */
+  .op  { color: var(--cyan); }  /* operators */
+
+  /* code header bar */
+  .code-header {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding: .5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .code-header .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .code-header .filename {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+  .code-wrap.attached { border-radius: 0 0 var(--radius) var(--radius); }
+
+  /* ── TABS ──────────────────────────────────────── */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .tab-btn:hover { background: var(--surface2); color: var(--text); }
+  .tab-btn.active { background: var(--cyan-dim); color: var(--cyan); border-color: var(--cyan-soft); }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* ── TIMELINE ──────────────────────────────────── */
+  .tl { display: flex; flex-direction: column; gap: 0; }
+  .tl-item {
+    display: flex;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .tl-item:last-child { border-bottom: none; }
+  .tl-dot {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .tl-body { flex: 1; }
+  .tl-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .tl-time { font-size: 12px; color: var(--dim); font-family: var(--mono); }
+
+  /* ── METHOD TABLE ──────────────────────────────── */
+  .method-grid {
+    display: grid;
+    grid-template-columns: 80px 1fr 1fr;
+    gap: 10px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+  .method-grid:last-child { border-bottom: none; }
+  .method-grid p { margin: 0; }
+
+  /* ── STATS / METRIC CARDS ──────────────────────── */
+  .metric {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    text-align: center;
+  }
+  .metric-val { font-size: 22px; font-weight: 600; }
+  .metric-lbl { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* ── FLOW DIAGRAM ──────────────────────────────── */
+  .flow { display: flex; flex-direction: column; gap: 0; }
+  .flow-node {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: .9rem 1rem;
+    text-align: center;
+    font-size: 13px;
+  }
+  .flow-arrow {
+    text-align: center;
+    color: var(--dim);
+    font-size: 11px;
+    padding: 4px 0;
+    font-family: var(--mono);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .arrow-line { flex: 1; height: 1px; background: var(--border); max-width: 60px; }
+
+  /* ── CHECK ROWS ────────────────────────────────── */
+  .check-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .check-row:last-child { border-bottom: none; }
+  .check-icon {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--green-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 12px;
+    color: var(--green);
+    font-weight: 600;
+    margin-top: 1px;
+  }
+
+  /* ── STEP NUMBERS ──────────────────────────────── */
+  .step-num {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--cyan-dim);
+    color: var(--cyan);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── TAGS / PILLS ──────────────────────────────── */
+  .pill {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 9px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .tag {
+    font-size: 11px;
+    border-radius: 6px;
+    padding: 3px 9px;
+    font-weight: 500;
+  }
+  .tag-cyan   { background: var(--cyan-dim);   color: var(--cyan);   }
+  .tag-green  { background: var(--green-dim);  color: var(--green);  }
+  .tag-red    { background: var(--red-dim);    color: var(--red);    }
+  .tag-violet { background: var(--violet-dim); color: var(--violet); }
+  .tag-amber  { background: var(--amber-dim);  color: var(--amber);  }
+
+  /* ── ALERT BOXES ───────────────────────────────── */
+  .alert {
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+  .alert-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .alert-cyan   { background: var(--cyan-dim);   border: 1px solid var(--cyan-soft); }
+  .alert-green  { background: var(--green-dim);  border: 1px solid #166534; }
+  .alert-amber  { background: var(--amber-dim);  border: 1px solid #92400E; }
+  .alert-violet { background: var(--violet-dim); border: 1px solid var(--violet-soft); }
+  .alert-red    { background: var(--red-dim);    border: 1px solid #991B1B; }
+
+  /* ── SECTION DIVIDER ───────────────────────────── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+
+  /* ── UTILITY ───────────────────────────────────── */
+  .gap-sm { gap: 8px; }
+  .gap-md { gap: 12px; }
+  .gap-lg { gap: 16px; }
+  .flex    { display: flex; }
+  .flex-col{ flex-direction: column; }
+  .flex-wrap{ flex-wrap: wrap; }
+  .items-start{ align-items: flex-start; }
+  .items-center{ align-items: center; }
+  .justify-between{ justify-content: space-between; }
+  .mb-2 { margin-bottom: 8px; }
+  .mb-3 { margin-bottom: 12px; }
+  .mb-4 { margin-bottom: 16px; }
+  .mb-5 { margin-bottom: 20px; }
+  .mt-2 { margin-top: 8px; }
+  .mt-3 { margin-top: 12px; }
+  .mt-4 { margin-top: 16px; }
+  .w-full { width: 100%; }
+  .text-sm { font-size: 13px; }
+  .text-xs { font-size: 11px; }
+  .text-muted { color: var(--muted); }
+  .text-dim   { color: var(--dim); }
+  .font-mono  { font-family: var(--mono); }
+  .font-500   { font-weight: 500; }
+  .bold       { font-weight: 600; }
+  .italic     { font-style: italic; }
+  .lh-loose   { line-height: 1.75; }
+
+  /* ── NAV CONTROLS ──────────────────────────────── */
+  #nav-bar {
+    width: 100%;
+    max-width: 820px;
+    padding: .75rem 1.5rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    bottom: 0;
+    background: rgba(15,23,42,.9);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--border);
+  }
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 9px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .nav-btn:hover:not(:disabled) { background: var(--surface2); border-color: var(--cyan); color: var(--cyan); }
+  .nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+  #nav-center { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  #dots { display: flex; gap: 6px; }
+  .dot-btn {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: all .25s;
+    background: var(--border);
+  }
+  .dot-btn.active { background: var(--cyan); transform: scale(1.5); }
+
+  /* ── KEYBOARD HINT ─────────────────────────────── */
+  #key-hint {
+    font-size: 11px;
+    color: var(--dim);
+    font-family: var(--mono);
+    text-align: center;
+    padding: .4rem 0 .2rem;
+  }
+  kbd {
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 10px;
+  }
+
+  /* ── INTRO GRID (portada meta) ─────────────────── */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  @media (max-width: 480px) { .meta-grid { grid-template-columns: 1fr; } }
+
+  /* ── FILE TREE ─────────────────────────────────── */
+  .file-tree {
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 2;
+    color: var(--muted);
+  }
+  .file-tree .hl { color: var(--cyan); }
+  .file-tree .folder { color: var(--text); }
+
+  /* ── QUOTE BLOCK ───────────────────────────────── */
+  .quote-block {
+    border-left: 3px solid var(--cyan);
+    padding: 1rem 1.25rem;
+    background: var(--surface);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+  .quote-block strong { color: var(--text); font-weight: 500; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media print {
+    #topbar, #nav-bar, #key-hint { display: none !important; }
+    .slide { display: block !important; page-break-after: always; }
+    body { background: white; color: black; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── PROGRESS ── -->
+<div id="progress-wrap"><div id="progress-bar"></div></div>
+
+<!-- ── TOP BAR ── -->
+<div id="topbar">
+  <div id="topbar-left">
+    <div class="live-dot"></div>
+    <span class="topbar-url">localhost:3001/contactos</span>
+  </div>
+  <span id="slide-counter" aria-live="polite">1 / 9</span>
+</div>
+
+<!-- ── DECK ── -->
+<main id="deck" aria-label="Presentación Clase 7">
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 0 · PORTADA
+  ═══════════════════════════════════════════════ -->
+  <div class="slide active" id="s0" role="region" aria-label="Portada">
+
+    <div class="hero-wrap">
+      <!-- floating http verbs -->
+      <span class="fv a1 v-get"  style="top:12%;left:4%">GET /contactos</span>
+      <span class="fv a2 v-post" style="top:20%;right:6%">POST /contactos</span>
+      <span class="fv a3 v-del"  style="top:65%;left:10%">DELETE /contactos/:id</span>
+      <span class="fv a4 v-patch"style="bottom:16%;right:12%">200 OK</span>
+      <span class="fv a5 v-200"  style="top:48%;right:5%">201 Created</span>
+      <span class="fv a6 v-get"  style="top:32%;left:38%">404 Not Found</span>
+      <span class="fv a1 v-200"  style="bottom:10%;left:40%">{ "id": "1d3f", ... }</span>
+
+      <!-- server alive -->
+      <div style="position:absolute;top:1.2rem;right:1.4rem;display:flex;align-items:center;gap:8px">
+        <div class="live-dot"></div>
+        <span class="font-mono text-xs text-muted">JSON Server · puerto 3001</span>
+      </div>
+
+      <div class="hero-content">
+        <p class="eyebrow">SENA · ADSO · Instructores: G. Bolaños & C. Acevedo</p>
+        <h1 style="margin:8px 0 10px">Clase 7<br><span style="color:var(--cyan)">API REST</span> + JSON Server</h1>
+        <p style="font-size:18px;color:var(--muted);margin-bottom:24px">Agenda ADSO v5 — Conectada al backend</p>
+        <div class="flex gap-sm flex-wrap items-center">
+          <span class="verb v-get">GET</span>
+          <span class="verb v-post">POST</span>
+          <span class="verb v-del">DELETE</span>
+          <span class="text-sm text-muted" style="margin-left:4px">→ fetch() + JSON Server</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta-grid">
+      <div class="metric">
+        <div class="metric-val" style="color:var(--cyan)">3</div>
+        <div class="metric-lbl">Métodos HTTP</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val" style="color:var(--green)">JSON</div>
+        <div class="metric-lbl">Formato de datos</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val" style="color:var(--violet)">v5</div>
+        <div class="metric-lbl">Versión Agenda ADSO</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 1 · PROPÓSITO + COMPETENCIAS
+  ═══════════════════════════════════════════════ -->
+  <div class="slide" id="s1" role="region" aria-label="Propósito">
+    <div class="eyebrow">01 / Propósito de aprendizaje</div>
+    <h2 class="mb-4">¿Qué vamos a lograr?</h2>
+
+    <div class="card mb-4 lh-loose" style="font-size:15px;color:var(--muted)">
+      El aprendiz comprenderá y aplicará el consumo de
+      <strong style="color:var(--cyan)">APIs REST</strong> desde React —
+      GET, POST y DELETE — usando <strong style="color:var(--text)">JSON Server</strong>
+      como servidor simulado para convertir la Agenda ADSO en una aplicación
+      verdaderamente conectada a backend.
+    </div>
+
+    <div class="flex flex-col gap-sm mb-4">
+      <div class="card card-accent flex items-start gap-md">
+        <span style="font-size:20px;flex-shrink:0;margin-top:1px">🧩</span>
+        <div>
+          <p class="font-500 mb-2">Competencia 1</p>
+          <p class="text-sm text-muted lh-loose">Crear componentes front-end del software de acuerdo con el diseño.</p>
+        </div>
+      </div>
+      <div class="card card-green flex items-start gap-md">
+        <span style="font-size:20px;flex-shrink:0;margin-top:1px">🌐</span>
+        <div>
+          <p class="font-500 mb-2">Competencia 2</p>
+          <p class="text-sm text-muted lh-loose">Consumir servicios web y manejar respuestas JSON.</p>
+        </div>
+      </div>
+      <div class="card card-violet flex items-start gap-md">
+        <span style="font-size:20px;flex-shrink:0;margin-top:1px">⚡</span>
+        <div>
+          <p class="font-500 mb-2">Competencia 3</p>
+          <p class="text-sm text-muted lh-loose">Aplicar principios de interactividad y manejo de estado en aplicaciones web.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card" style="border-color:var(--border)">
+        <p class="tag tag-red mb-2" style="display:inline-block">Antes — v4</p>
+        <p class="text-sm text-muted lh-loose">Agenda local con <strong style="color:var(--text)">localStorage</strong>. Sin backend real. Los datos se pierden si borras el navegador.</p>
+      </div>
+      <div class="card card-cyan">
+        <p class="tag tag-cyan mb-2" style="display:inline-block">Ahora — v5 ✦</p>
+        <p class="text-sm text-muted lh-loose">Agenda conectada a <strong style="color:var(--cyan)">API REST</strong> con JSON Server. Persistencia real en <strong style="color:var(--text)">db.json</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 2 · QUÉ ES UNA API REST
+  ═══════════════════════════════════════════════ -->
+  <div class="slide" id="s2" role="region" aria-label="Qué es una API REST">
+    <div class="eyebrow">02 / Conceptos clave</div>
+    <h2 class="mb-4">¿Qué es una API REST?</h2>
+
+    <div class="card mb-4 lh-loose" style="font-size:15px;color:var(--muted)">
+      Un <strong style="color:var(--text)">servidor</strong> que entrega y recibe datos mediante
+      <strong style="color:var(--cyan)">HTTP</strong> en formato
+      <strong style="color:var(--green)">JSON</strong>.
+      Lo usaremos para almacenar y consultar contactos con persistencia real,
+      sin depender de localStorage.
+    </div>
+
+    <!-- HTTP methods table -->
+    <div class="card mb-4">
+      <p class="font-500 text-sm mb-3">Métodos HTTP que usaremos en la Agenda</p>
+      <div class="method-grid">
+        <span class="verb v-get">GET</span>
+        <p class="font-500 text-sm">Leer datos</p>
+        <p class="text-sm text-muted">Cargar la lista de contactos</p>
+      </div>
+      <div class="method-grid">
+        <span class="verb v-post">POST</span>
+        <p class="font-500 text-sm">Crear datos</p>
+        <p class="text-sm text-muted">Guardar un nuevo contacto</p>
+      </div>
+      <div class="method-grid">
+        <span class="verb v-del">DELETE</span>
+        <p class="font-500 text-sm">Borrar datos</p>
+        <p class="text-sm text-muted">Eliminar un contacto por id</p>
+      </div>
+    </div>
+
+    <!-- endpoint box -->
+    <div class="alert alert-violet mb-4">
+      <span class="alert-icon">🔗</span>
+      <div>
+        <p class="font-500 mb-2">Endpoint base de la Agenda</p>
+        <code class="font-mono text-sm" style="color:var(--cyan)">http://localhost:3001/contactos</code>
+        <div class="flex flex-wrap gap-sm mt-2">
+          <span class="pill">GET /contactos</span>
+          <span class="pill">POST /contactos</span>
+          <span class="pill">DELETE /contactos/:id</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- response codes -->
+    <div class="grid3">
+      <div class="metric">
+        <div class="metric-val" style="color:var(--green);font-family:var(--mono);font-size:20px">200</div>
+        <div class="metric-lbl">OK — éxito</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val" style="color:var(--cyan);font-family:var(--mono);font-size:20px">201</div>
+        <div class="metric-lbl">Created — creado</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val" style="color:var(--red);font-family:var(--mono);font-size:20px">404</div>
+        <div class="metric-lbl">Not Found — no existe</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 3 · JSON SERVER INSTALACIÓN
+  ═══════════════════════════════════════════════ -->
+  <div class="slide" id="s3" role="region" aria-label="Instalación JSON Server">
+    <div class="eyebrow">03 / JSON Server</div>
+    <h2 class="mb-4">Instalación y configuración</h2>
+
+    <div class="flex flex-col gap-sm mb-4">
+
+      <div>
+        <div class="code-header">
+          <div class="dot" style="background:#EF4444"></div>
+          <div class="dot" style="background:#F59E0B"></div>
+          <div class="dot" style="background:#22C55E"></div>
+          <span class="filename">Paso 1 — instalar globalmente</span>
+        </div>
+        <div class="code-wrap attached"><span style="color:var(--cyan)">npm install -g json-server</span></div>
+      </div>
+
+      <div>
+        <div class="code-header">
+          <div class="dot" style="background:#EF4444"></div>
+          <div class="dot" style="background:#F59E0B"></div>
+          <div class="dot" style="background:#22C55E"></div>
+          <span class="filename">Paso 2 — crear db.json en la raíz del proyecto</span>
+        </div>
+        <div class="code-wrap attached">
+<span class="cm">// db.json — base de datos simulada</span>
+<span class="op">{</span>
+  <span class="st">"contactos"</span><span class="op">: [</span>
+    <span class="op">{</span>
+      <span class="st">"id"</span>: <span class="st">"1d3f"</span>,
+      <span class="st">"nombre"</span>: <span class="st">"Gustavo Adolfo Bolaños"</span>,
+      <span class="st">"telefono"</span>: <span class="st">"3217532037"</span>,
+      <span class="st">"correo"</span>: <span class="st">"gabodorado@gmail.com"</span>,
+      <span class="st">"etiqueta"</span>: <span class="st">"profe"</span>
+    <span class="op">}</span>
+  <span class="op">]</span>
+<span class="op">}</span></div>
+      </div>
+
+      <div>
+        <div class="code-header">
+          <div class="dot" style="background:#EF4444"></div>
+          <div class="dot" style="background:#F59E0B"></div>
+          <div class="dot" style="background:#22C55E"></div>
+          <span class="filename">Paso 3 — iniciar el servidor</span>
+        </div>
+        <div class="code-wrap attached"><span style="color:var(--cyan)">json-server --watch db.json --port 3001</span></div>
+      </div>
+
+    </div>
+
+    <div class="alert alert-amber">
+      <span class="alert-icon">⚠️</span>
+      <div>
+        <p class="font-500 mb-2">Importante</p>
+        <p class="text-sm lh-loose text-muted">Deja este terminal <strong style="color:var(--text)">abierto</strong> mientras trabajas. Abre un <strong style="color:var(--text)">segundo terminal</strong> para correr el proyecto React con <code class="font-mono" style="font-size:12px">npm run dev</code>. Los dos deben correr al mismo tiempo.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 4 · ARQUITECTURA DEL PROYECTO
+  ═══════════════════════════════════════════════ -->
+  <div class="slide" id="s4" role="region" aria-label="Arquitectura">
+    <div class="eyebrow">04 / Arquitectura</div>
+    <h2 class="mb-4">Estructura del proyecto</h2>
+
+    <div class="grid2 mb-4">
+
+      <!-- file tree -->
+      <div class="card">
+        <p class="font-500 text-sm mb-3" style="color:var(--cyan)">📁 Archivos del proyecto</p>
+        <div class="file-tree">
+          <div>📄 <span class="hl">db.json</span>  <span class="text-dim text-xs">← base de datos</span></div>
+          <div>📄 tailwind.config.js</div>
+          <div>📄 postcss.config.js</div>
+          <div class="mt-2">📁 <span class="folder">src/</span></div>
+          <div style="margin-left:1.2rem">📄 <span class="hl">api.js</span>  <span class="text-dim text-xs">← nuevo ✦</span></div>
+          <div style="margin-left:1.2rem">📄 App.jsx</div>
+          <div style="margin-left:1.2rem">📄 index.css</div>
+          <div style="margin-left:1.2rem">📄 main.jsx</div>
+          <div style="margin-left:1.2rem" class="mt-2">📁 <span class="folder">components/</span></div>
+          <div style="margin-left:2.4rem">📄 FormularioContacto.jsx</div>
+          <div style="margin-left:2.4rem">📄 ContactoCard.jsx</div>
+        </div>
+      </div>
+
+      <!-- data flow -->
+      <div class="flow">
+        <div class="flow-node" style="background:var(--cyan-dim);border-color:var(--cyan-soft)">
+          <p class="font-500" style="color:var(--cyan)">⚛️ React App</p>
+          <p class="text-xs text-muted mt-2">App.jsx + componentes</p>
+        </div>
+        <div class="flow-arrow">
+          <div class="arrow-line"></div>
+          <code class="text-xs">fetch() via api.js</code>
+          <div class="arrow-line"></div>
+        </div>
+        <div class="flow-node" style="background:var(--green-dim);border-color:#166534">
+          <p class="font-500" style="color:var(--green)">🖥️ JSON Server</p>
+          <p class="text-xs text-muted mt-2">localhost:3001/contactos</p>
+        </div>
+        <div class="flow-arrow">
+          <div class="arrow-line"></div>
+          <code class="text-xs">lee / escribe</code>
+          <div class="arrow-line"></div>
+        </div>
+        <div class="flow-node" style="background:var(--violet-dim);border-color:var(--violet-soft)">
+          <p class="font-500" style="color:var(--violet)">📄 db.json</p>
+          <p class="text-xs text-muted mt-2">Persistencia real en disco</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-cyan">
+      <span class="alert-icon">💡</span>
+      <p class="text-sm lh-loose">El archivo <code class="font-mono" style="font-size:12px;color:var(--cyan)">src/api.js</code> es el único punto de contacto entre React y el servidor. Todos los <code class="font-mono" style="font-size:12px">fetch()</code> van ahí — nunca directamente en los componentes.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 5 · api.js — LAS 3 FUNCIONES
+  ═══════════════════════════════════════════════ -->
+  <div class="slide" id="s5" role="region" aria-label="api.js">
+    <div class="eyebrow">05 / src/api.js</div>
+    <h2 class="mb-4">Las 3 funciones de la API</h2>
+
+    <div class="tab-bar mb-3" id="tb5">
+      <button class="tab-btn active" onclick="switchTab('tb5','tp5','get')"><span class="verb v-get" style="padding:2px 6px;font-size:10px">GET</span> listar</button>
+      <button class="tab-btn" onclick="switchTab('tb5','tp5','post')"><span class="verb v-post" style="padding:2px 6px;font-size:10px">POST</span> crear</button>
+      <button class="tab-btn" onclick="switchTab('tb5','tp5','del')"><span class="verb v-del" style="padding:2px 6px;font-size:10px">DELETE</span> borrar</button>
+    </div>
+
+    <div id="tp5-get" class="tab-pane active">
+      <div class="code-wrap mb-3">
+<span class="cm">// Base URL de la API local</span>
+<span class="kw">const</span> API = <span class="st">"http://localhost:3001/contactos"</span>;
+
+<span class="cm">// GET — obtener todos los contactos</span>
+<span class="kw">export async function</span> <span class="fn">listarContactos</span>() {
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(API);
+  <span class="cm">// Si la respuesta no es OK (>=400), lanzamos error</span>
+  <span class="kw">if</span> (!res.ok) <span class="kw">throw new</span> <span class="er">Error</span>(<span class="st">"Error al listar contactos"</span>);
+  <span class="kw">return</span> res.<span class="fn">json</span>();  <span class="cm">// ← devuelve array de contactos</span>
+}</div>
+      <div class="flex items-center gap-sm flex-wrap">
+        <span class="verb v-get">GET</span>
+        <code class="pill">/contactos</code>
+        <span style="color:var(--dim)">→</span>
+        <code class="pill" style="color:var(--green);border-color:var(--green-dim)">200 OK + [ {…}, {…} ]</code>
+      </div>
+    </div>
+
+    <div id="tp5-post" class="tab-pane">
+      <div class="code-wrap mb-3">
+<span class="cm">// POST — crear un nuevo contacto</span>
+<span class="kw">export async function</span> <span class="fn">crearContacto</span>(data) {
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(API, {
+    method: <span class="st">"POST"</span>,
+    headers: { <span class="st">"Content-Type"</span>: <span class="st">"application/json"</span> },
+    body: JSON.<span class="fn">stringify</span>(data),  <span class="cm">// objeto → JSON string</span>
+  });
+  <span class="kw">if</span> (!res.ok) <span class="kw">throw new</span> <span class="er">Error</span>(<span class="st">"Error al crear el contacto"</span>);
+  <span class="kw">return</span> res.<span class="fn">json</span>();  <span class="cm">// ← contacto creado con id asignado</span>
+}</div>
+      <div class="flex items-center gap-sm flex-wrap">
+        <span class="verb v-post">POST</span>
+        <code class="pill">/contactos</code>
+        <span style="color:var(--dim)">→</span>
+        <code class="pill" style="color:var(--cyan);border-color:var(--cyan-dim)">201 Created + { id, nombre, … }</code>
+      </div>
+    </div>
+
+    <div id="tp5-del" class="tab-pane">
+      <div class="code-wrap mb-3">
+<span class="cm">// DELETE — eliminar contacto por id</span>
+<span class="kw">export async function</span> <span class="fn">eliminarContactoPorId</span>(id) {
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="st">`${API}/${id}`</span>, {
+    method: <span class="st">"DELETE"</span>,
+  });
+  <span class="kw">if</span> (!res.ok) <span class="kw">throw new</span> <span class="er">Error</span>(<span class="st">"Error al eliminar el contacto"</span>);
+  <span class="kw">return</span> <span class="kw">true</span>;  <span class="cm">// éxito confirmado</span>
+}</div>
+      <div class="flex items-center gap-sm flex-wrap">
+        <span class="verb v-del">DELETE</span>
+        <code class="pill">/contactos/:id</code>
+        <span style="color:var(--dim)">→</span>
+        <code class="pill" style="color:var(--red);border-color:var(--red-dim)">200 OK — contacto eliminado</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 6 · App.jsx — INTEGRACIÓN
+  ═══════════════════════════════════════════════ -->
+  <div class="slide" id="s6" role="region" aria-label="App.jsx">
+    <div class="eyebrow">06 / App.jsx — Integración</div>
+    <h2 class="mb-4">Estados + handlers</h2>
+
+    <div class="tab-bar mb-3" id="tb6">
+      <button class="tab-btn active" onclick="switchTab('tb6','tp6','est')">Estados</button>
+      <button class="tab-btn" onclick="switchTab('tb6','tp6','get')">useEffect (GET)</button>
+      <button class="tab-btn" onclick="switchTab('tb6','tp6','post')">agregar (POST)</button>
+      <button class="tab-btn" onclick="switchTab('tb6','tp6','del')">eliminar (DELETE)</button>
+    </div>
+
+    <div id="tp6-est" class="tab-pane active">
+      <div class="code-wrap mb-3">
+<span class="cm">// importamos las funciones de api.js</span>
+<span class="kw">import</span> { listarContactos, crearContacto, eliminarContactoPorId }
+  <span class="kw">from</span> <span class="st">"./api.js"</span>;
+
+<span class="cm">// Los 3 estados del componente App</span>
+<span class="kw">const</span> [contactos,  setContactos ] = <span class="fn">useState</span>([]);
+<span class="cm">//   ↑ lista que viene de la API              ↑ vacía al inicio</span>
+
+<span class="kw">const</span> [cargando,   setCargando  ] = <span class="fn">useState</span>(<span class="kw">true</span>);
+<span class="cm">//   ↑ true mientras esperamos la respuesta</span>
+
+<span class="kw">const</span> [error,      setError     ] = <span class="fn">useState</span>(<span class="st">""</span>);
+<span class="cm">//   ↑ mensaje de error si la API falla</span></div>
+      <div class="alert alert-violet text-sm">
+        <span>💡</span>
+        <p>Tres estados, tres responsabilidades claras: <strong style="color:var(--text)">datos</strong>, <strong style="color:var(--text)">carga</strong> y <strong style="color:var(--text)">error</strong>. Esta es la estructura estándar para consumo de APIs en React.</p>
+      </div>
+    </div>
+
+    <div id="tp6-get" class="tab-pane">
+      <div class="code-wrap mb-3">
+<span class="cm">// useEffect — se ejecuta UNA vez al montar el componente</span>
+<span class="fn">useEffect</span>(() => {
+  <span class="kw">async function</span> <span class="fn">cargarContactos</span>() {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> data = <span class="kw">await</span> <span class="fn">listarContactos</span>(); <span class="cm">// GET a la API</span>
+      <span class="fn">setContactos</span>(data);                   <span class="cm">// guardamos en estado</span>
+    } <span class="kw">catch</span> (e) {
+      <span class="fn">setError</span>(<span class="st">"No se pudo cargar la lista de contactos"</span>);
+    } <span class="kw">finally</span> {
+      <span class="fn">setCargando</span>(<span class="kw">false</span>);  <span class="cm">// ocultamos el spinner</span>
+    }
+  }
+  <span class="fn">cargarContactos</span>();
+}, []);  <span class="cm">// ← [] = solo se ejecuta al montar, no en cada render</span></div>
+      <div class="flex items-center gap-sm">
+        <span class="verb v-get">GET</span>
+        <span class="text-sm text-muted">→ setContactos(data) → re-render con la lista</span>
+      </div>
+    </div>
+
+    <div id="tp6-post" class="tab-pane">
+      <div class="code-wrap mb-3">
+<span class="cm">// Agregar contacto — llamado desde FormularioContacto</span>
+<span class="kw">const</span> <span class="fn">agregarContacto</span> = <span class="kw">async</span> (nuevo) => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> creado = <span class="kw">await</span> <span class="fn">crearContacto</span>(nuevo);  <span class="cm">// POST</span>
+    <span class="cm">// No recargamos toda la lista: añadimos solo el nuevo</span>
+    <span class="fn">setContactos</span>((prev) => [...prev, creado]);
+  } <span class="kw">catch</span> (e) {
+    <span class="fn">setError</span>(<span class="st">"No se pudo agregar el contacto"</span>);
+  }
+};</div>
+      <div class="flex items-center gap-sm">
+        <span class="verb v-post">POST</span>
+        <span class="text-sm text-muted">→ crearContacto(nuevo) → [...prev, creado]</span>
+      </div>
+    </div>
+
+    <div id="tp6-del" class="tab-pane">
+      <div class="code-wrap mb-3">
+<span class="cm">// Eliminar contacto — llamado desde ContactoCard</span>
+<span class="kw">const</span> <span class="fn">eliminarContacto</span> = <span class="kw">async</span> (id) => {
+  <span class="kw">try</span> {
+    <span class="kw">await</span> <span class="fn">eliminarContactoPorId</span>(id);  <span class="cm">// DELETE en la API</span>
+    <span class="cm">// Filtramos el estado local sin recargar</span>
+    <span class="fn">setContactos</span>((prev) => prev.<span class="fn">filter</span>((c) => c.id !== id));
+  } <span class="kw">catch</span> (e) {
+    <span class="fn">setError</span>(<span class="st">"No se pudo eliminar el contacto"</span>);
+  }
+};</div>
+      <div class="flex items-center gap-sm">
+        <span class="verb v-del">DELETE</span>
+        <span class="text-sm text-muted">→ eliminarContactoPorId(id) → filter del estado</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 7 · COMPONENTES
+  ═══════════════════════════════════════════════ -->
+  <div class="slide" id="s7" role="region" aria-label="Componentes">
+    <div class="eyebrow">07 / Componentes</div>
+    <h2 class="mb-4">FormularioContacto & ContactoCard</h2>
+
+    <div class="tab-bar mb-3" id="tb7">
+      <button class="tab-btn active" onclick="switchTab('tb7','tp7','form')">FormularioContacto.jsx</button>
+      <button class="tab-btn" onclick="switchTab('tb7','tp7','card')">ContactoCard.jsx</button>
+    </div>
+
+    <div id="tp7-form" class="tab-pane active">
+      <div class="code-wrap mb-3">
+<span class="kw">export default function</span> <span class="fn">FormularioContacto</span>({ onAgregar }) {
+  <span class="cm">// Estado del formulario como objeto único</span>
+  <span class="kw">const</span> [form, setForm] = <span class="fn">useState</span>({
+    nombre: <span class="st">""</span>, telefono: <span class="st">""</span>, correo: <span class="st">""</span>, etiqueta: <span class="st">""</span>
+  });
+
+  <span class="cm">// onChange genérico — usa el atributo name del input</span>
+  <span class="kw">const</span> <span class="fn">onChange</span> = (e) =>
+    <span class="fn">setForm</span>({ ...form, [e.target.name]: e.target.value });
+
+  <span class="kw">const</span> <span class="fn">onSubmit</span> = (e) => {
+    e.<span class="fn">preventDefault</span>();
+    <span class="kw">if</span> (!form.nombre || !form.telefono || !form.correo) <span class="kw">return</span>;
+    <span class="fn">onAgregar</span>(form);  <span class="cm">// llama agregarContacto en App.jsx</span>
+    <span class="fn">setForm</span>({ nombre: <span class="st">""</span>, telefono: <span class="st">""</span>, correo: <span class="st">""</span>, etiqueta: <span class="st">""</span> });
+  };
+}</div>
+      <div class="alert alert-cyan text-sm">
+        <span>💡</span>
+        <p><strong style="color:var(--text)">onChange genérico:</strong> un solo handler para todos los campos, gracias a <code class="font-mono" style="font-size:12px">[e.target.name]</code> como llave dinámica.</p>
+      </div>
+    </div>
+
+    <div id="tp7-card" class="tab-pane">
+      <div class="code-wrap mb-3">
+<span class="kw">export default function</span> <span class="fn">ContactoCard</span>(
+  { nombre, telefono, correo, etiqueta, onEliminar }
+) {
+  <span class="kw">return</span> (
+    &lt;<span class="fn">div</span> className=<span class="st">"bg-white shadow-sm border border-gray-200
+            rounded-2xl p-6 flex items-start justify-between"</span>&gt;
+
+      <span class="cm">{/* Info del contacto */}</span>
+      &lt;<span class="fn">div</span> className=<span class="st">"space-y-1"</span>&gt;
+        &lt;<span class="fn">h3</span>&gt;{nombre}&lt;/<span class="fn">h3</span>&gt;
+        &lt;<span class="fn">p</span>&gt;📞 {telefono}&lt;/<span class="fn">p</span>&gt;
+        &lt;<span class="fn">p</span>&gt;✉️ {correo}&lt;/<span class="fn">p</span>&gt;
+        {etiqueta &amp;&amp; &lt;<span class="fn">span</span>&gt;{etiqueta}&lt;/<span class="fn">span</span>&gt;}
+      &lt;/<span class="fn">div</span>&gt;
+
+      <span class="cm">{/* Botón eliminar */}</span>
+      &lt;<span class="fn">button</span> onClick={onEliminar}&gt;Eliminar&lt;/<span class="fn">button</span>&gt;
+    &lt;/<span class="fn">div</span>&gt;
+  );
+}</div>
+      <div class="alert alert-violet text-sm">
+        <span>💡</span>
+        <p><code class="font-mono" style="font-size:12px">onEliminar</code> es una función que llega del padre como prop. El componente no sabe nada de la API — solo llama a lo que recibe.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 8 · ACTIVIDAD PRÁCTICA + EVIDENCIAS
+  ═══════════════════════════════════════════════ -->
+  <div class="slide" id="s8" role="region" aria-label="Actividad práctica">
+    <div class="eyebrow">08 / Actividad práctica</div>
+    <h2 class="mb-4">Manos al código</h2>
+
+    <div class="grid2 mb-4">
+
+      <div class="card">
+        <p class="font-500 text-sm mb-3" style="color:var(--cyan)">Pasos de la actividad</p>
+        <div class="flex flex-col gap-sm">
+          <div class="flex items-start gap-sm">
+            <div class="step-num">1</div>
+            <p class="text-sm text-muted lh-loose">Levantar JSON Server en la terminal.</p>
+          </div>
+          <div class="flex items-start gap-sm">
+            <div class="step-num">2</div>
+            <p class="text-sm text-muted lh-loose">Ver la API en el navegador: localhost:3001/contactos</p>
+          </div>
+          <div class="flex items-start gap-sm">
+            <div class="step-num">3</div>
+            <p class="text-sm text-muted lh-loose">Crear 3 contactos desde el formulario React.</p>
+          </div>
+          <div class="flex items-start gap-sm">
+            <div class="step-num">4</div>
+            <p class="text-sm text-muted lh-loose">Eliminar un contacto y verificar en la API.</p>
+          </div>
+          <div class="flex items-start gap-sm">
+            <div class="step-num">5</div>
+            <p class="text-sm text-muted lh-loose">Confirmar actualización sin recargar la página.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="font-500 text-sm mb-3" style="color:var(--green)">4 capturas para Classroom</p>
+        <div>
+          <div class="check-row">
+            <div class="check-icon">✓</div>
+            <p class="text-sm text-muted lh-loose">Terminal de JSON Server encendido.</p>
+          </div>
+          <div class="check-row">
+            <div class="check-icon">✓</div>
+            <p class="text-sm text-muted lh-loose">Lista de contactos cargada desde API.</p>
+          </div>
+          <div class="check-row">
+            <div class="check-icon">✓</div>
+            <p class="text-sm text-muted lh-loose">Contacto agregado desde React.</p>
+          </div>
+          <div class="check-row">
+            <div class="check-icon">✓</div>
+            <p class="text-sm text-muted lh-loose">Contacto eliminado correctamente.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="alert alert-violet">
+      <span class="alert-icon">🔖</span>
+      <div>
+        <p class="font-500 mb-2">Commit recomendado</p>
+        <code class="font-mono text-sm" style="color:var(--cyan)">git add .</code><br>
+        <code class="font-mono text-sm" style="color:var(--cyan)">git commit -m "Clase_7_Agenda_ADSO_v5_API"</code><br>
+        <code class="font-mono text-sm" style="color:var(--cyan)">git push origin main</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 9 (LAST) · MINI RETO + CIERRE
+  ═══════════════════════════════════════════════ -->
+  <div class="slide" id="s9" role="region" aria-label="Cierre">
+    <div class="eyebrow">09 / Mini reto + Cierre</div>
+    <h2 class="mb-4">Reto final y mensaje</h2>
+
+    <!-- mini reto -->
+    <div class="alert alert-amber mb-4">
+      <span class="alert-icon">🏆</span>
+      <div style="width:100%">
+        <p class="font-500 mb-2" style="font-size:16px">Mini reto</p>
+        <p class="text-sm text-muted lh-loose mb-3">Agrega un campo <code class="font-mono" style="font-size:12px;color:var(--text)">empresa</code> al formulario y guárdalo también en la API. Muéstralo en el ContactoCard con clases <code class="font-mono" style="font-size:12px">text-sm text-gray-600</code>.</p>
+        <div class="code-wrap" style="background:#0D1B0A">
+<span class="cm">// FormularioContacto.jsx — añadir empresa al estado</span>
+<span class="kw">const</span> [form, setForm] = <span class="fn">useState</span>({
+  nombre: <span class="st">""</span>, telefono: <span class="st">""</span>, correo: <span class="st">""</span>,
+  etiqueta: <span class="st">""</span>, <span style="color:var(--amber)">empresa: <span class="st">""</span></span>  <span class="cm">// ← nuevo campo</span>
+});</div>
+      </div>
+    </div>
+
+    <!-- quote -->
+    <div class="quote-block mb-4">
+      <p><em>"Hoy tu Agenda ADSO dejó de ser local y ahora se conecta como una aplicación <strong>real</strong>. ¡Gran avance!"</em></p>
+      <p class="text-xs text-dim mt-3">— Gustavo Bolaños & Cristian Acevedo · Desarrollo Web ReactJS ADSO</p>
+    </div>
+
+    <!-- methods mastered -->
+    <div class="grid3 mb-4">
+      <div class="metric">
+        <span class="verb v-get" style="font-size:14px;padding:6px 16px">GET</span>
+        <p class="text-xs mt-3" style="color:var(--green);font-weight:500">✓ Dominado</p>
+      </div>
+      <div class="metric">
+        <span class="verb v-post" style="font-size:14px;padding:6px 16px">POST</span>
+        <p class="text-xs mt-3" style="color:var(--green);font-weight:500">✓ Dominado</p>
+      </div>
+      <div class="metric">
+        <span class="verb v-del" style="font-size:14px;padding:6px 16px">DELETE</span>
+        <p class="text-xs mt-3" style="color:var(--green);font-weight:500">✓ Dominado</p>
+      </div>
+    </div>
+
+    <!-- next class -->
+    <div class="alert alert-cyan">
+      <span class="alert-icon">→</span>
+      <div>
+        <p class="font-500 mb-1">Próxima clase</p>
+        <p class="text-sm text-muted">Continuaremos mejorando la Agenda ADSO — refactorización, validaciones avanzadas y buenas prácticas de código React profesional.</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ── NAV BAR ── -->
+<div id="nav-bar">
+  <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled aria-label="Diapositiva anterior">
+    ← Anterior
+  </button>
+  <div id="nav-center">
+    <div id="dots" role="tablist" aria-label="Navegación de diapositivas"></div>
+    <span class="font-mono text-xs text-dim" id="nav-counter">1 / 9</span>
+  </div>
+  <button class="nav-btn" id="btn-next" onclick="navigate(1)" aria-label="Diapositiva siguiente">
+    Siguiente →
+  </button>
+</div>
+
+<p id="key-hint"><kbd>←</kbd> <kbd>→</kbd> para navegar · <kbd>Space</kbd> para avanzar</p>
+
+<script>
+  const TOTAL = 9;
+  let current = 0;
+
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const progressBar = document.getElementById('progress-bar');
+  const counter = document.getElementById('slide-counter');
+  const navCounter = document.getElementById('nav-counter');
+  const dotsEl = document.getElementById('dots');
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+
+  // Build dots
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('button');
+    d.className = 'dot-btn' + (i === 0 ? ' active' : '');
+    d.setAttribute('role', 'tab');
+    d.setAttribute('aria-label', 'Diapositiva ' + (i + 1));
+    d.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  }
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    dotsEl.children[current].classList.remove('active');
+    dotsEl.children[current].setAttribute('aria-selected', 'false');
+
+    current = Math.max(0, Math.min(TOTAL - 1, n));
+
+    slides[current].classList.add('active');
+    dotsEl.children[current].classList.add('active');
+    dotsEl.children[current].setAttribute('aria-selected', 'true');
+
+    const pct = Math.round((current + 1) / TOTAL * 100);
+    progressBar.style.width = pct + '%';
+    counter.textContent = (current + 1) + ' / ' + TOTAL;
+    navCounter.textContent = (current + 1) + ' / ' + TOTAL;
+
+    btnPrev.disabled = current === 0;
+    btnNext.disabled = current === TOTAL - 1;
+
+    // scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function navigate(dir) { goTo(current + dir); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft')                   { e.preventDefault(); navigate(-1); }
+    if (e.key === 'Home')                        { e.preventDefault(); goTo(0); }
+    if (e.key === 'End')                         { e.preventDefault(); goTo(TOTAL - 1); }
+  });
+
+  // Tab switching for code slides
+  function switchTab(barId, panePrefix, key) {
+    // Update buttons
+    const bar = document.getElementById(barId);
+    Array.from(bar.querySelectorAll('.tab-btn')).forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    // Update panes (find all panes that start with panePrefix)
+    document.querySelectorAll('[id^="' + panePrefix + '-"]').forEach(p => {
+      p.classList.remove('active');
+    });
+    const target = document.getElementById(panePrefix + '-' + key);
+    if (target) target.classList.add('active');
+  }
+</script>
+</body>
+</html>
