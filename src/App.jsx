@@ -18,6 +18,7 @@ export default function App() {
     correo: "",
     telefono: "",
     etiqueta: "",
+    prioridad: "media"
   });
 
   // GET - cargar contactos desde JSON Server

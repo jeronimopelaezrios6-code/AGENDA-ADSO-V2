@@ -90,6 +90,23 @@ export default function FormularioContacto({
           />
         </div>
 
+        <div>
+          <label className="block text-sm font-semibold text-slate-300 mb-2">
+            Prioridad
+          </label>
+
+          <select
+            name="prioridad"
+            value={form.prioridad}
+            onChange={onChange}
+            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400"
+          >
+            <option value="alta">Alta</option>
+            <option value="media">Media</option>
+            <option value="baja">Baja</option>
+          </select>
+        </div>
+
         <button
           type="submit"
           disabled={noSePuedeEnviar}
