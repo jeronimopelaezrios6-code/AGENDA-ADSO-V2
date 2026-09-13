@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import ContactoCard from "./components/ContactoCard";
-import FormularioContacto from "./components/FormularioContacto";
+import FormularioContacto from "./components/FormularioContacto.jsx";
 import Saludo from "./components/Saludo";
 import {
   listarContactos,
@@ -12,6 +12,7 @@ export default function App() {
   const [contactos, setContactos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+  const [enviando, setEnviando] = useState(false);
 
   const [form, setForm] = useState({
     nombre: "",

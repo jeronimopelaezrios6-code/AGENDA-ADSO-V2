@@ -6,6 +6,7 @@
   "homepage": "https://github.com/CristianDRTC/React-clase03",
   "scripts": {
     "dev": "vite",
+    "server": "json-server --watch db.json --port 3001",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
