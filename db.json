@@ -2,7 +2,7 @@
   "contactos": [
     {
       "nombre": "barbero",
-      "correo": "jeronimopelaezrios6@gmail.com",
+      "correo": "barbero@gmail.com",
       "telefono": "3052411319",
       "etiqueta": "Compañero",
       "prioridad": "media",
@@ -10,18 +10,75 @@
     },
     {
       "nombre": "maicol",
-      "correo": "jeronimopelaezrios6@gmail.com",
-      "telefono": "3052411319",
+      "correo": "maicol@gmail.com",
+      "telefono": "3156728431",
       "etiqueta": "Compañero",
+      "prioridad": "alta",
       "id": "6EAUTRJ7LxI"
     },
     {
       "nombre": "Jeronimo",
-      "correo": "jeronimopelaezrios6@gmail.com",
+      "correo": "jeronimo@gmail.com",
       "telefono": "3052411319",
       "etiqueta": "Compañero",
       "prioridad": "baja",
       "id": "R02TWrROfsc"
+    },
+    {
+      "nombre": "Andres",
+      "correo": "andres@gmail.com",
+      "telefono": "3004567891",
+      "etiqueta": "Amigo",
+      "prioridad": "alta",
+      "id": "A01BCD234EF"
+    },
+    {
+      "nombre": "Carlos",
+      "correo": "carlos@gmail.com",
+      "telefono": "3105678923",
+      "etiqueta": "Trabajo",
+      "prioridad": "media",
+      "id": "B02CDE345FG"
+    },
+    {
+      "nombre": "Daniela",
+      "correo": "daniela@gmail.com",
+      "telefono": "3206789345",
+      "etiqueta": "Familia",
+      "prioridad": "alta",
+      "id": "C03DEF456GH"
+    },
+    {
+      "nombre": "Laura",
+      "correo": "laura@gmail.com",
+      "telefono": "3017894567",
+      "etiqueta": "Amiga",
+      "prioridad": "baja",
+      "id": "D04EFG567HI"
+    },
+    {
+      "nombre": "Mateo",
+      "correo": "mateo@gmail.com",
+      "telefono": "3123456789",
+      "etiqueta": "Compañero",
+      "prioridad": "media",
+      "id": "E05FGH678IJ"
+    },
+    {
+      "nombre": "Santiago",
+      "correo": "santiago@gmail.com",
+      "telefono": "3184567231",
+      "etiqueta": "Trabajo",
+      "prioridad": "alta",
+      "id": "F06GHI789JK"
+    },
+    {
+      "nombre": "Valentina",
+      "correo": "valentina@gmail.com",
+      "telefono": "3045678123",
+      "etiqueta": "Familia",
+      "prioridad": "baja",
+      "id": "G07HIJ890KL"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

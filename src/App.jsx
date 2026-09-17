@@ -15,6 +15,8 @@ export default function App() {
   const [enviando, setEnviando] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [ordenAsc, setOrdenAsc] = useState(true);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [contactosPorPagina] = useState(3);
 
   const [form, setForm] = useState({
     nombre: "",
@@ -109,6 +111,18 @@ export default function App() {
     return 0;
   });
 
+  //Paginacion, Redondeo de pagina
+  const totalPaginas = Math.ceil(
+    contactosOrdenados.length / contactosPorPagina
+  );
+
+  const indiceInicio = (paginaActual - 1) * contactosPorPagina;
+  const indiceFin = indiceInicio + contactosPorPagina;
+
+  const contactosPaginados = contactosOrdenados.slice(
+    indiceInicio,
+    indiceFin
+  );
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -179,7 +193,7 @@ export default function App() {
                   No se encontraron contactos que coincidan con la búsqueda.
                 </p>
               ) : (
-                contactosOrdenados.map((c) => (
+                contactosPaginados.map((c) => (
                   <ContactoCard
                     key={c.id}
                     id={c.id}
@@ -193,6 +207,40 @@ export default function App() {
               )}
 
             </div>
+
+<div className="flex items-center justify-center gap-4 mt-8">
+
+  <button
+    disabled={paginaActual === 1}
+    onClick={() => setPaginaActual((p) => p - 1)}
+    className="rounded-xl bg-slate-800 border border-slate-700 px-8 py-4 text-lg font-bold text-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-700"
+  >
+    ← Anterior
+  </button>
+
+  {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((n) => (
+    <button
+      key={n}
+      onClick={() => setPaginaActual(n)}
+      className={`rounded-xl w-14 h-14 text-lg font-bold ${
+        n === paginaActual
+          ? "bg-cyan-500 text-slate-950"
+          : "bg-slate-800 text-cyan-400 border border-slate-700"
+      }`}
+    >
+      {n}
+    </button>
+  ))}
+
+  <button
+    disabled={paginaActual === totalPaginas}
+    onClick={() => setPaginaActual((p) => p + 1)}
+    className="rounded-xl bg-slate-800 border border-slate-700 px-8 py-4 text-lg font-bold text-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-700"
+  >
+    Siguiente →
+  </button>
+
+</div>
 
           </section>
 
