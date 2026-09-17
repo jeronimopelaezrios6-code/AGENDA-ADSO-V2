@@ -1,12 +1,27 @@
 {
   "contactos": [
     {
+      "nombre": "barbero",
+      "correo": "jeronimopelaezrios6@gmail.com",
+      "telefono": "3052411319",
+      "etiqueta": "Compañero",
+      "prioridad": "media",
+      "id": "cn54iQrgteI"
+    },
+    {
+      "nombre": "maicol",
+      "correo": "jeronimopelaezrios6@gmail.com",
+      "telefono": "3052411319",
+      "etiqueta": "Compañero",
+      "id": "6EAUTRJ7LxI"
+    },
+    {
       "nombre": "Jeronimo",
       "correo": "jeronimopelaezrios6@gmail.com",
       "telefono": "3052411319",
-      "etiqueta": "",
-      "prioridad": "media",
-      "id": "w4-N9nqhSIU"
+      "etiqueta": "Compañero",
+      "prioridad": "baja",
+      "id": "R02TWrROfsc"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

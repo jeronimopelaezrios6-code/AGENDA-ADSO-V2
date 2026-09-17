@@ -13,6 +13,8 @@ export default function App() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
+  const [busqueda, setBusqueda] = useState("");
+  const [ordenAsc, setOrdenAsc] = useState(true);
 
   const [form, setForm] = useState({
     nombre: "",
@@ -82,6 +84,32 @@ export default function App() {
     });
   }
 
+  //Ordenamiento Y Busqueda
+  const contactosFiltrados = contactos.filter((c) => {
+    const termino = busqueda.toLowerCase();
+    const nombre = c.nombre.toLowerCase();
+    const correo = c.correo.toLowerCase();
+    const etiqueta = (c.etiqueta || "").toLowerCase();
+
+    return (
+      nombre.includes(termino) ||
+      correo.includes(termino) ||
+      etiqueta.includes(termino)
+    );
+  });
+
+  //Ordenamiento y busqueda
+  const contactosOrdenados = [...contactosFiltrados].sort((a, b) => {
+    const nombreA = a.nombre.toLowerCase();
+    const nombreB = b.nombre.toLowerCase();
+
+    if (nombreA < nombreB) return ordenAsc ? -1 : 1;
+    if (nombreA > nombreB) return ordenAsc ? 1 : -1;
+
+    return 0;
+  });
+
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
 
@@ -104,6 +132,34 @@ export default function App() {
               Registros
             </h2>
 
+            <div className="flex flex-col md:flex-row gap-3 mb-6">
+
+            {/* Input Buscador de Contactos  */}
+            <input
+              type="text"
+              placeholder="Buscar por nombre, correo o etiqueta..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white placeholder:text-slate-500 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400"
+            />
+            {/* Boton de Ordenamiento de Z-A y A-Z */}
+            <button
+              type="button"
+              onClick={() => setOrdenAsc((prev) => !prev)}
+              className="rounded-xl bg-slate-800 border border-slate-700 px-5 py-3 font-semibold text-cyan-400 transition hover:bg-slate-700"
+            >
+              {ordenAsc ? "Ordenar Z-A" : "Ordenar A-Z"}
+            </button>
+
+          </div>
+
+            <p className="text-sm text-slate-400 mb-6">
+              {contactosOrdenados.length}{" "}
+              {contactosOrdenados.length === 1
+                ? "contacto encontrado"
+                : "contactos encontrados"}
+            </p>
+
             {cargando && (
               <p className="text-slate-400 mb-4">
                 Cargando contactos...
@@ -118,12 +174,12 @@ export default function App() {
 
             <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
 
-              {!cargando && contactos.length === 0 ? (
+              {!cargando && contactosOrdenados.length === 0 ? (
                 <p className="text-slate-400">
-                  No hay contactos en la agenda.
+                  No se encontraron contactos que coincidan con la búsqueda.
                 </p>
               ) : (
-                contactos.map((c) => (
+                contactosOrdenados.map((c) => (
                   <ContactoCard
                     key={c.id}
                     id={c.id}
